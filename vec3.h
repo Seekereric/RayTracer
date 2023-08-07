@@ -61,6 +61,12 @@ public:
 		return sqrt(lengthSquare());
 	}
 
+	vec3 normalize() const
+	{
+		float len = length();
+		return vec3(x / len, y / len, z / len);
+	}
+
 	union 
 	{
 		float e[3];
