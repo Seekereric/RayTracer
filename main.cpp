@@ -1,51 +1,48 @@
 #include <iostream>
 
+#include "rtweekend.h"
 #include "vec3.h"
 #include "color.h"
 #include "ray.h"
+#include "sphere.h"
+#include "hittable.h"
+#include "hittable_list.h"
 
-bool hitSphere(ray r, vec3 center, float radius)
+
+Color rayColor(const Ray& r, const HittableList& world)
 {
-	// a - sphere: (P - c)^2 = r^2
-	// b - ray: P(t) = o + dt
-	// insert b into a we have: d^2 * t^2 + 2 * (o - c) * d * t + (o - c)^2 - r^2 = 0
-	// calculate discriminant b^2 - 4ac for this quadratic equation
-	// >0: two solution (intersections)
-	// =0: one solution (intersections)
-	// <0: no solution (intersections)
-	float a = r.dir.lengthSquare();
-	float b = 2 * dot(r.origin - center, r.dir);
-	float c = (r.origin - center).lengthSquare() - radius * radius;
+	HitRecord hitRecord;
+	if (world.hit(r, Interval(0, infinity), hitRecord))
+	{
+		return 0.5 * (hitRecord.normal + Vec3(1.0));
+	}
 
-	return b * b - 4 * a * c > 0;
-}
-
-color rayColor(ray r)
-{
-	if (hitSphere(r, point3(0, 0, -1), 0.5))
-		return color(1, 0, 0);
-	vec3 dir = r.dir.normalize();
+	Vec3 dir = r.dir.normalize();
 	float t = (dir.y + 1) * 0.5f;
-	return t * color(0.5f, 0.7f, 1.0f) + (1 - t) * color(1.0f, 1.0f, 1.0f);
+	return t * Color(0.5f, 0.7f, 1.0f) + (1 - t) * Color(1.0f, 1.0f, 1.0f);
 }
 
 int main()
 {
+	HittableList world;
+	world.add(make_shared<Sphere>(Vec3(0, 0, -1), 0.5f));
+	world.add(make_shared<Sphere>(Vec3(0, -100.5, -1), 100.0f));
+
 	const float aspectRatio = 16.0f / 9.0f;
 
 	const int imgHeight = 400;
 	const int imgWidth  = int(imgHeight * aspectRatio);
 
-	const float viewportHeight = 2.0;
+	const float viewportHeight = 2.0f;
 	const float viewportWidth = viewportHeight * aspectRatio;
 
-	const vec3 horizontal = vec3(imgWidth, 0, 0);
-	const vec3 vertical = vec3(0, imgHeight, 0);
+	const Vec3 horizontal = Vec3(imgWidth, 0, 0);
+	const Vec3 vertical = Vec3(0, imgHeight, 0);
 
-	const point3 focalPoint = vec3(0, 0, 0);
-	const float focalLength = 1.0;
+	const Point3 focalPoint = Vec3(0, 0, 0);
+	const float focalLength = 1.0f;
 
-	const vec3 bottomLeftCorner = vec3(-viewportWidth / 2.0, -viewportHeight / 2.0, -focalLength);
+	const Vec3 bottomLeftCorner = Vec3(-viewportWidth / 2.0f, -viewportHeight / 2.0f, -focalLength);
 
 	std::cout << "P3\n" << imgWidth << ' ' << imgHeight << "\n255\n";
 
@@ -58,9 +55,10 @@ int main()
 			float pixelPosX = bottomLeftCorner.x + float(j) / (imgWidth - 1) * viewportWidth;
 			float pixelPosY = bottomLeftCorner.y + float(imgHeight - 1 - i) / (imgHeight - 1) * viewportHeight;
 
-			ray r = ray(focalPoint, vec3(pixelPosX, pixelPosY, -focalLength) - focalPoint);
+			Ray r = Ray(focalPoint, Vec3(pixelPosX, pixelPosY, -focalLength) - focalPoint);
 
-			color c = rayColor(r);
+
+			Color c = rayColor(r, world);
 
 			ppmWritePixelColor(std::cout, c);
 		}
