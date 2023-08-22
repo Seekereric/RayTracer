@@ -21,14 +21,23 @@ public:
 			std::cerr << "\rScanline remaining: " << imgHeight - i << ' ' << std::flush;
 			for (int j = 0; j < imgWidth; j++)
 			{
-				float pixelPosX = bottomLeftCorner.x + float(j) / (imgWidth - 1) * viewportWidth;
-				float pixelPosY = bottomLeftCorner.y + float(imgHeight - 1 - i) / (imgHeight - 1) * viewportHeight;
+				Color c(0, 0, 0);
 
-				Ray r = Ray(focalPoint, Vec3(pixelPosX, pixelPosY, -focalLength) - focalPoint);
+				float pixelPosX = topLeftCorner.x + j * viewportDeltaU;
+				float pixelPosY = topLeftCorner.y + i * viewportDeltaV;
+				Vec3 pixelCenter = Vec3(pixelPosX, pixelPosY, -focalLength);
 
-				Color c = rayColor(r, world);
+				for (int k = 0; k < samplesPerPixel; k++)
+				{
+					// sampling within the 0.5 pixel range around the pixel center
+					Vec3 offset((-0.5f + randomNum()) * viewportDeltaU, (-0.5f + randomNum()) * viewportDeltaV, 0);
+					Ray r = Ray(focalPoint, (pixelCenter + offset) - focalPoint);
 
-				ppmWritePixelColor(std::cout, c);
+					c += rayColor(r, world);
+				}
+				
+
+				ppmWritePixelColor(std::cout, c, samplesPerPixel);
 			}
 		}
 
@@ -38,6 +47,7 @@ public:
 	float aspectRatio;
 	int imgHeight;
 	int imgWidth;
+	int samplesPerPixel;
 
 private:
 	void initialize()
@@ -45,13 +55,14 @@ private:
 		viewportHeight = 2.0f;
 		viewportWidth = viewportHeight * aspectRatio;
 
-		horizontal = Vec3(imgWidth, 0, 0);
-		vertical = Vec3(0, imgHeight, 0);
+		viewportDeltaU = viewportWidth / imgWidth; 
+		viewportDeltaV = -viewportHeight / imgHeight;
 
 		focalPoint = Vec3(0, 0, 0);
 		focalLength = 1.0f;
 
-		bottomLeftCorner = Vec3(-viewportWidth / 2.0f, -viewportHeight / 2.0f, -focalLength);
+		// + 0.5 so it's on the pixel center
+		topLeftCorner = Vec3(-viewportWidth * 0.5f + viewportDeltaU * 0.5f, viewportHeight * 0.5f + viewportDeltaV * 0.5f, -focalLength);
 	}
 
 	Color rayColor(const Ray& r, const HittableList& world)
@@ -69,11 +80,11 @@ private:
 
 	float viewportHeight;
 	float viewportWidth;
-	Vec3 horizontal;
-	Vec3 vertical;
+	float viewportDeltaU;
+	float viewportDeltaV;
 	Point3 focalPoint;
 	float focalLength;
-	Vec3 bottomLeftCorner;
+	Vec3 topLeftCorner;
 };
 
 #endif // !CAMREA_H

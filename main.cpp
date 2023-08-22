@@ -21,5 +21,6 @@ int main()
 	camera.aspectRatio = 16.0f / 9.0f;
 	camera.imgHeight = 400;
 	camera.imgWidth  = int(camera.imgHeight * camera.aspectRatio);
+	camera.samplesPerPixel = 10;
 	camera.render(world);
 }
