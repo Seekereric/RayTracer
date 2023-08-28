@@ -31,9 +31,9 @@ public:
 				{
 					// sampling within the 0.5 pixel range around the pixel center
 					Vec3 offset((-0.5f + randomNum()) * viewportDeltaU, (-0.5f + randomNum()) * viewportDeltaV, 0);
-					Ray r = Ray(focalPoint, (pixelCenter + offset) - focalPoint);
+					Ray r = Ray(focalPoint, normalize((pixelCenter + offset) - focalPoint));
 
-					c += rayColor(r, world);
+					c += rayColor(r, world, maxDepth);
 				}
 				
 
@@ -48,6 +48,7 @@ public:
 	int imgHeight;
 	int imgWidth;
 	int samplesPerPixel;
+	int maxDepth;
 
 private:
 	void initialize()
@@ -65,12 +66,21 @@ private:
 		topLeftCorner = Vec3(-viewportWidth * 0.5f + viewportDeltaU * 0.5f, viewportHeight * 0.5f + viewportDeltaV * 0.5f, -focalLength);
 	}
 
-	Color rayColor(const Ray& r, const HittableList& world)
+	Color rayColor(const Ray& r, const HittableList& world, int depth)
 	{
+		if (depth <= 0)
+			return Color(0, 0, 0);
+
 		HitRecord hitRecord;
-		if (world.hit(r, Interval(0, infinity), hitRecord))
+		if (world.hit(r, Interval(0.001f, infinity), hitRecord))
 		{
-			return 0.5 * (hitRecord.normal + Vec3(1.0));
+			// Uniform reflection
+			//Vec3 randomDir = randomPosInsidePositiveHemisphere(hitRecord.normal).normalize();
+
+			// Lambertian reflection
+			Vec3 randomDir = normalize(hitRecord.normal + randomPosInsideUnitSphere().normalize());
+
+			return 0.5 * rayColor(Ray(hitRecord.pos, randomDir), world, depth - 1);
 		}
 
 		Vec3 dir = r.dir.normalize();

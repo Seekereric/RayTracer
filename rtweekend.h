@@ -5,6 +5,7 @@
 #include <limits>
 #include <memory>
 #include <cstdlib>
+#include "vec3.h"
 
 using std::shared_ptr;
 using std::make_shared;
@@ -29,6 +30,36 @@ inline float randomNum(float min, float max)
     return min + (max - min) * randomNum();
 }
 
+inline Vec3 randomVec3()
+{
+    return Vec3(randomNum(), randomNum(), randomNum());
+}
+
+inline Vec3 randomVec3(float min, float max)
+{
+    return Vec3(randomNum(min, max), randomNum(min, max), randomNum(min, max));
+}
+
+inline Vec3 randomPosInsideUnitSphere()
+{
+    Vec3 pos;
+    while (1)
+    {
+        pos = randomVec3(-1.0f, 1.0f);
+        if (pos.lengthSquare() < 1.0f)
+            break;
+    }
+    return pos;
+}
+
+inline Vec3 randomPosInsidePositiveHemisphere(const Vec3& n)
+{
+    Vec3 center = Vec3(0, 0, 0);
+    Vec3 pos = randomPosInsideUnitSphere();
+    if (dot(n, pos - center) > 0)
+        return pos;
+    return -pos;
+}
 #include "vec3.h"
 #include "ray.h"
 #include "interval.h"

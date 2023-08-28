@@ -14,13 +14,14 @@
 int main()
 {
 	HittableList world;
-	world.add(make_shared<Sphere>(Vec3(0, 0, -1), 0.5f));
-	world.add(make_shared<Sphere>(Vec3(0, -100.5, -1), 100.0f));
+	world.add(make_shared<Sphere>(Vec3(0, 0, -1.0f), 0.5f));
+	world.add(make_shared<Sphere>(Vec3(0, -100.5f, -1.0f), 100.0f));
 
 	Camera camera;
 	camera.aspectRatio = 16.0f / 9.0f;
 	camera.imgHeight = 400;
 	camera.imgWidth  = int(camera.imgHeight * camera.aspectRatio);
 	camera.samplesPerPixel = 10;
+	camera.maxDepth = 50;
 	camera.render(world);
 }
