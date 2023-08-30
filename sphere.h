@@ -2,10 +2,11 @@
 #define SPHERE_H
 
 #include "hittable.h"
+#include "material.h"
 
 class Sphere : public Hittable {
 public:
-	Sphere(Vec3 in_center, float in_radius) : center(in_center), radius(in_radius) {};
+	Sphere(Vec3 in_center, float in_radius, shared_ptr<Material> in_mat) : center(in_center), radius(in_radius), mat(in_mat) {};
 
 	bool hit(const Ray& ray, Interval interval, HitRecord& hitRecord) const override
 	{
@@ -49,6 +50,7 @@ public:
 		hitRecord.normal = (hitRecord.pos - center) / radius;
 		hitRecord.frontFace = dot(ray.dir, hitRecord.normal) < 0;
 		hitRecord.normal = hitRecord.frontFace ? hitRecord.normal : -hitRecord.normal; // 6.4 ray casting to front or back face of the surface? Different side different rendering
+		hitRecord.mat = mat;
 
 		return true;
 	}
@@ -56,6 +58,7 @@ public:
 private:
 	Vec3 center;
 	float radius;
+	shared_ptr<Material> mat;
 };
 
 #endif // #ifndef SPHERE_H

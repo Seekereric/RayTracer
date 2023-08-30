@@ -3,14 +3,19 @@
 
 #include "ray.h"
 
-struct HitRecord
+class Material;
+
+class HitRecord
 {
+public:
 	Vec3 pos;
 	float t;
 
 	Vec3 normal;
 	bool frontFace;
 	char _padding[3];
+
+	shared_ptr<Material> mat;
 };
 
 class Hittable {

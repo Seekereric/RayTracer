@@ -68,6 +68,14 @@ public:
 		return Vec3(x / len, y / len, z / len);
 	}
 
+	bool nearZero()
+	{
+		float a = 1e-8f;
+		if (fabs(x) < a && fabs(y) < a && fabs(z) < a)
+			return true;
+		return false;
+	}
+
 	union 
 	{
 		float e[3];

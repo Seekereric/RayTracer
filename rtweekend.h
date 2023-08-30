@@ -60,6 +60,12 @@ inline Vec3 randomPosInsidePositiveHemisphere(const Vec3& n)
         return pos;
     return -pos;
 }
+
+inline Vec3 reflect(const Vec3& v, const Vec3& n)
+{
+    return -dot(v, n) * 2 * n + v;
+}
+
 #include "vec3.h"
 #include "ray.h"
 #include "interval.h"

@@ -74,13 +74,11 @@ private:
 		HitRecord hitRecord;
 		if (world.hit(r, Interval(0.001f, infinity), hitRecord))
 		{
-			// Uniform reflection
-			//Vec3 randomDir = randomPosInsidePositiveHemisphere(hitRecord.normal).normalize();
-
-			// Lambertian reflection
-			Vec3 randomDir = normalize(hitRecord.normal + randomPosInsideUnitSphere().normalize());
-
-			return 0.5 * rayColor(Ray(hitRecord.pos, randomDir), world, depth - 1);
+			Color attenuation;
+			Ray out;
+			if(hitRecord.mat->scatter(r, hitRecord, attenuation, out))
+				return attenuation * rayColor(out, world, depth - 1);
+			return Color(0, 0, 0);
 		}
 
 		Vec3 dir = r.dir.normalize();
