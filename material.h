@@ -55,4 +55,49 @@ private:
 	Color albedo;
 	float fuzziness;
 };
+
+// Dielectric
+class Dielectric : public Material {
+public:
+	Dielectric(float indexOfRefraction) : ir(indexOfRefraction) {}
+
+	bool scatter(const Ray& ray, const HitRecord& hitRecord, Color& attenuation, Ray& scattered) const override
+	{
+		// snell's law: 
+		// eta * sin(theta) = eta` * sine(theta`)
+
+		float refractiveIndexRatio = hitRecord.frontFace ? 1.0f / ir : ir;
+		float cos_theta = dot(-ray.dir, hitRecord.normal);
+		float sin_theta = sqrtf(1 - cos_theta * cos_theta);
+
+		Vec3 scatterDir;
+		if (refractiveIndexRatio * sin_theta > 1 || reflectance(cos_theta, refractiveIndexRatio) > randomNum())
+		{
+			// reflect
+			scatterDir = reflect(ray.dir, hitRecord.normal);
+		}
+		else
+		{
+			// refract
+			scatterDir = refract(ray.dir, hitRecord.normal, refractiveIndexRatio);
+		}
+		 
+		scattered.dir = scatterDir;
+		scattered.origin = hitRecord.pos;
+		attenuation = Vec3(1.0f, 1.0f, 1.0f);
+
+		return true;
+	}
+private:
+	float ir;
+
+	float reflectance(float cosine, float ref_idx) const
+	{
+		// Schlick's approximation
+		float r0 = (1.0f - ref_idx) / (1.0f + ref_idx);
+		r0 = r0 * r0;
+		float res = r0 + (1.0f - r0) * powf((1.0f - cosine), 5);
+		return res;
+	}
+};
 #endif // MATERIAL_H

@@ -66,6 +66,14 @@ inline Vec3 reflect(const Vec3& v, const Vec3& n)
     return -dot(v, n) * 2 * n + v;
 }
 
+
+inline Vec3 refract(const Vec3& v_in, const Vec3& n, const float etaIn_over_etaOut)
+{
+    Vec3 v_out_perp = etaIn_over_etaOut * (v_in + dot(-v_in, n) * n);
+    Vec3 v_out_parall = -n * sqrt(fabs(1.0f - v_out_perp.lengthSquare()));
+    return normalize(v_out_parall + v_out_perp);
+}
+
 #include "vec3.h"
 #include "ray.h"
 #include "interval.h"
