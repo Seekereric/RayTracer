@@ -23,15 +23,17 @@ public:
 			{
 				Color c(0, 0, 0);
 
-				float pixelPosX = topLeftCorner.x + j * viewportDeltaU;
-				float pixelPosY = topLeftCorner.y + i * viewportDeltaV;
-				Vec3 pixelCenter = Vec3(pixelPosX, pixelPosY, -focalLength);
+				//float pixelPosX = topLeftCorner.x + j * viewportDeltaU;
+				//float pixelPosY = topLeftCorner.y + i * viewportDeltaV;
+				//Vec3 pixelCenter = Vec3(pixelPosX, pixelPosY, -focalLength);
+
+				Vec3 pixelCenter = topLeftCorner + viewportDeltaU * (float)j + viewportDeltaV * (float)i;
 
 				for (int k = 0; k < samplesPerPixel; k++)
 				{
 					// sampling within the 0.5 pixel range around the pixel center
-					Vec3 offset((-0.5f + randomNum()) * viewportDeltaU, (-0.5f + randomNum()) * viewportDeltaV, 0);
-					Ray r = Ray(focalPoint, normalize((pixelCenter + offset) - focalPoint));
+					Vec3 offset((-0.5f + randomNum()) * viewportDeltaU + (-0.5f + randomNum()) * viewportDeltaV);
+					Ray r = Ray(lookFrom, normalize((pixelCenter + offset) - lookFrom));
 
 					c += rayColor(r, world, maxDepth);
 				}
@@ -49,21 +51,35 @@ public:
 	int imgWidth;
 	int samplesPerPixel;
 	int maxDepth;
+	float vFov = 90.0f;
+	Vec3 lookFrom = Vec3(-1.0f, 0.0f, 0.0f);
+	Vec3 lookAt = Vec3(0.0f, 0.0f, 0.0f);
+	Vec3 worldUp = Vec3(0.0f, 1.0f, 0.0f);
 
 private:
 	void initialize()
 	{
-		viewportHeight = 2.0f;
-		viewportWidth = viewportHeight * aspectRatio;
-
-		viewportDeltaU = viewportWidth / imgWidth; 
-		viewportDeltaV = -viewportHeight / imgHeight;
-
 		focalPoint = Vec3(0, 0, 0);
 		focalLength = 1.0f;
 
+		// tan(vFov/2) = h / d, h = half viewport image height, d = focal length
+		float h = tanf(degreesToRadians(vFov / 2.0f)) * fabs(focalLength);
+
+		//viewportHeight = 2.0f;
+		viewportHeight = 2 * h;
+		viewportWidth = viewportHeight * aspectRatio;
+
+		forward = normalize(lookFrom - lookAt);
+		right = normalize(cross(worldUp, forward));
+		up = cross(forward, right);
+
+		viewportDeltaU = right * viewportWidth / (float)imgWidth; 
+		viewportDeltaV = -up * viewportHeight / (float)imgHeight;
+
 		// + 0.5 so it's on the pixel center
-		topLeftCorner = Vec3(-viewportWidth * 0.5f + viewportDeltaU * 0.5f, viewportHeight * 0.5f + viewportDeltaV * 0.5f, -focalLength);
+		//topLeftCorner = Vec3(-viewportWidth * 0.5f + viewportDeltaU * 0.5f, viewportHeight * 0.5f + viewportDeltaV * 0.5f, -focalLength);
+		topLeftCorner = (lookFrom - focalLength * forward) + (-right * viewportWidth / 2.0f) + (up * viewportHeight / 2.0f);
+		topLeftCorner = topLeftCorner + 0.5 * (viewportDeltaU + viewportDeltaV);
 	}
 
 	Color rayColor(const Ray& r, const HittableList& world, int depth)
@@ -88,11 +104,14 @@ private:
 
 	float viewportHeight;
 	float viewportWidth;
-	float viewportDeltaU;
-	float viewportDeltaV;
+	Vec3 viewportDeltaU;
+	Vec3 viewportDeltaV;
 	Point3 focalPoint;
 	float focalLength;
 	Vec3 topLeftCorner;
+	Vec3 forward;
+	Vec3 right;
+	Vec3 up;
 };
 
 #endif // !CAMREA_H

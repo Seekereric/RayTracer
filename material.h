@@ -93,7 +93,8 @@ private:
 
 	float reflectance(float cosine, float ref_idx) const
 	{
-		// Schlick's approximation
+		// Schlick's approximation, the result is from 0 to 1.
+		// The more we look at a surface from a obligue angle the more we are seeing reflect lights
 		float r0 = (1.0f - ref_idx) / (1.0f + ref_idx);
 		r0 = r0 * r0;
 		float res = r0 + (1.0f - r0) * powf((1.0f - cosine), 5);
