@@ -14,7 +14,7 @@ using std::sqrt;
 const float pi = 3.1415926535897932385f;
 const float infinity = std::numeric_limits<float>::infinity();
 
-inline float degreesToRadians(float degrees) 
+inline float degreesToRadians(float degrees)
 {
     return degrees * pi / 180.0f;
 }
@@ -46,6 +46,18 @@ inline Vec3 randomPosInsideUnitSphere()
     while (1)
     {
         pos = randomVec3(-1.0f, 1.0f);
+        if (pos.lengthSquare() < 1.0f)
+            break;
+    }
+    return pos;
+}
+
+inline Vec3 randomPosInsideUnitDisk()
+{
+    Vec3 pos;
+    while (1)
+    {
+        pos = Vec3(randomNum(-1.0f, 1.0f), randomNum(-1.0f, 1.0f), 0);
         if (pos.lengthSquare() < 1.0f)
             break;
     }

@@ -47,5 +47,7 @@ int main()
 	camera.imgWidth  = int(camera.imgHeight * camera.aspectRatio);
 	camera.samplesPerPixel = 20;
 	camera.maxDepth = 50;
+	camera.defocusAngle = 10.0f;
+	camera.focusLength = 3.4f;
 	camera.render(world);
 }
